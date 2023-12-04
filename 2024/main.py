@@ -80,5 +80,161 @@ def day2():
     
     print("Possible Games Sum:", possible_games_sum)
     print("Games Powerset Sum:", games_powerset_sum)
+      
+def day3():      
+  already_added = []
+  gearshift_sum = 0
+  gearratio_sum = 0
+  
+  def is_numeric(section):
+    for character in section:
+      if character.isnumeric():
+        return True
+    return False
+    
+  def get_number_left_side(section):
+    number = ""
+    left_i = 1
+    while True:
+      sub_section = section[len(section) - left_i:]
+      if sub_section.isnumeric() and left_i <= len(section):
+        number = sub_section
+        left_i += 1
+      else:
+        break
+    return dict(number=number, index=len(section) - left_i + 1)
+  
+  def get_number_right_side(section):
+    number = ""
+    right_i = 0
+    while True:
+      sub_section = section[:right_i + 1]
+      if sub_section.isnumeric() and right_i < len(section):
+        number = sub_section
+        right_i += 1
+      else:
+        break
+    return dict(number=number, index=right_i)
+    
+  
+  def get_gearshifts(line_index, line, character_index, already_added):
+    gearshifts = []
+    left_character = line[character_index - 1]
+    center_character  = line[character_index]
+    right_character = line[character_index + 1]
+    if center_character.isnumeric():
+      number = center_character
+      
+      left_i = 2
+      right_i = 2
+      while True:
+        if left_character.isnumeric():
+          number = left_character + number
+          left_character = line[character_index - left_i]
+          left_i += 1
+        elif right_character.isnumeric():
+          number = number + right_character
+          right_character = line[character_index + right_i]
+          right_i += 1
+        else:
+          break
+        
+      if not (number in already_added[line_index] and character_index - left_i + 1 in already_added[line_index][number]):
+        gearshifts.append(int(number))
+        line_dict = already_added[line_index]
+        number_set = line_dict[number] if number in line_dict else []
+        number_set.append(character_index - left_i + 1)
+        line_dict[number] = number_set
+        already_added[line_index] = line_dict
+    else:
+      if left_character.isnumeric():
+        gear_shift = get_number_left_side(line[:character_index])
+        number = gear_shift["number"]
+        index = gear_shift["index"]
+        if number != "" and not (number in already_added[line_index] and index in already_added[line_index][number]):
+          gearshifts.append(int(number))
+          line_dict = already_added[line_index]
+          number_set = line_dict[number] if number in line_dict else []
+          number_set.append(index)
+      if right_character.isnumeric():
+        gear_shift = get_number_right_side(line[character_index + 1:])
+        number = gear_shift["number"]
+        index = gear_shift["index"]
+        if number != "" and not (number in already_added[line_index] and index in already_added[line_index][number]):
+          gearshifts.append(int(number))
+          line_dict = already_added[line_index]
+          number_set = line_dict[number] if number in line_dict else []
+          number_set.append(index)
+          line_dict[number] = number_set
+          already_added[line_index] = line_dict
+      
+    return gearshifts
+  
+  with open("day3.txt", "r") as input:
+    previous_line = ""
+    current_line = ""
+    next_line = ""
+      
+    debug = True
+    
+    line_index = 0
+    for line in input:
+      line = line.strip()
+      already_added.append({})
+      
+      previous_line = current_line
+      current_line = next_line
+      next_line = line
+        
+      character_index = 0
+      for symbol in current_line:
+        # Find only the symbols
+        if symbol != "." and not symbol.isnumeric():
+          # Look for any numbers within range
+          top_section = previous_line[character_index - 1:character_index + 2]
+          middle_section = current_line[character_index - 1:character_index + 2]
+          bottom_section = next_line[character_index - 1:character_index + 2]
+          all_gearshifts = []
+          
+          # Debug
+          if debug and (is_numeric(top_section) or is_numeric(middle_section) or is_numeric(bottom_section)):
+            print(top_section)
+            print(middle_section)
+            print(bottom_section)
+          
+          # Find the numbers
+          if is_numeric(top_section):
+            gearshifts = get_gearshifts(line_index - 2, previous_line, character_index, already_added)
+            all_gearshifts += gearshifts
+            gearshift_sum += sum(gearshifts)
+            if debug:
+              print("Added", gearshifts, "from top")
+          if is_numeric(middle_section):
+            gearshifts = get_gearshifts(line_index - 1, current_line, character_index, already_added)
+            all_gearshifts += gearshifts
+            gearshift_sum += sum(gearshifts)
+            if debug:
+              print("Added", gearshifts, "from middle")
+          if is_numeric(bottom_section):
+            gearshifts = get_gearshifts(line_index, next_line, character_index, already_added)
+            all_gearshifts += gearshifts
+            gearshift_sum += sum(gearshifts)
+            if debug:
+              print("Added", gearshifts, "from bottom")
+          
+          if symbol == "*" and len(all_gearshifts) == 2:
+            gearratio_sum += all_gearshifts[0] * all_gearshifts[1]
+            if debug:
+              print("Added gear ratio", all_gearshifts[0] * all_gearshifts[1])
+          
+          # Debug
+          if debug and (is_numeric(top_section) or is_numeric(middle_section) or is_numeric(bottom_section)):
+            print()
+        character_index += 1
+      line_index += 1
+      
+    print("Gearshift Sum:", gearshift_sum)
+    print("Gearratio Sum:", gearratio_sum)
+    
             
-day2()
+day3()
