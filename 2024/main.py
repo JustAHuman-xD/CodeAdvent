@@ -196,7 +196,6 @@ def day3():
           bottom_section = next_line[character_index - 1:character_index + 2]
           all_gearshifts = []
           
-          # Debug
           if debug and (is_numeric(top_section) or is_numeric(middle_section) or is_numeric(bottom_section)):
             print(top_section)
             print(middle_section)
@@ -226,8 +225,7 @@ def day3():
             gearratio_sum += all_gearshifts[0] * all_gearshifts[1]
             if debug:
               print("Added gear ratio", all_gearshifts[0] * all_gearshifts[1])
-          
-          # Debug
+
           if debug and (is_numeric(top_section) or is_numeric(middle_section) or is_numeric(bottom_section)):
             print()
         character_index += 1
@@ -236,5 +234,53 @@ def day3():
     print("Gearshift Sum:", gearshift_sum)
     print("Gearratio Sum:", gearratio_sum)
     
+def day4():
+  final_answer = 0
+  part_2 = 0
+  cards = {}
+  with open("day4.txt", "r") as input:
+    i = 0
+    for line in input:
+      line = line.strip()
+      card = line[line.index("Card ") + 5:line.index(":")].strip()
+      numbers = line[line.index(":") + 1:]
+      winning_numbers = numbers[:numbers.index("|")].split(" ")
+      your_numbers = numbers[numbers.index("|") + 1:].split(" ")
+      points = 0
+      cards_won_count = int(card) + 1
+      cards_won = []
+      for number in your_numbers:
+        if number in winning_numbers and number != "":
+          points = points * 2 if points > 0 else 1
+          cards_won.append(str(cards_won_count))
+          cards_won_count += 1
+      cards[card] = cards_won
+      final_answer += points
+      i += 1
+      print("card", card)
+      print("numbers", numbers)
+      print("winning numbers", winning_numbers)
+      print("your numbers", your_numbers)
+      print("points", points)
+      print()
+      
+  def get_cards_won(card):
+    cards_won = []
+    if not card in cards:
+      print("Card", card, "not in cards")
+      return cards_won
+    
+    for card_won in cards[card]:
+      cards_won.append(card_won)
+      cards_won += get_cards_won(card_won)
+    return cards_won
+  
+  for card in cards:
+    print(card)
+    part_2 += 1
+    part_2 += len(get_cards_won(card))
+
+  print("Final Answer:", final_answer)
+  print("Part 2:", part_2)
             
-day3()
+day4()
