@@ -257,18 +257,9 @@ def day4():
       cards[card] = cards_won
       final_answer += points
       i += 1
-      print("card", card)
-      print("numbers", numbers)
-      print("winning numbers", winning_numbers)
-      print("your numbers", your_numbers)
-      print("points", points)
-      print()
       
   def get_cards_won(card):
     cards_won = []
-    if not card in cards:
-      print("Card", card, "not in cards")
-      return cards_won
     
     for card_won in cards[card]:
       cards_won.append(card_won)
@@ -276,11 +267,93 @@ def day4():
     return cards_won
   
   for card in cards:
-    print(card)
     part_2 += 1
     part_2 += len(get_cards_won(card))
 
   print("Final Answer:", final_answer)
   print("Part 2:", part_2)
-            
-day4()
+  
+def day5():
+  
+  def apply_target_ranges_to_ranges(value_ranges, target_ranges):
+    new_value_ranges = []
+    for value_range in value_ranges:
+      added = False
+      value_min = value_range["min"]
+      value_max = value_range["max"]
+      for target_range in target_ranges:
+        target_min = target_range["min"]
+        target_max = target_range["max"]
+        target = target_range["target"]
+        
+        min_delta = value_min - target_min
+        max_delta = value_max - target_max
+        
+        print(f"value range {value_min} - {value_max}")
+        print(f"target range {target_min} - {target_max}")
+        print(f"min delta {min_delta}, max delta {max_delta}")
+        print()
+    
+  def apply_target_ranges(values, target_ranges):
+    new_values = []
+    for value in values:
+      added = False
+      for target_range in target_ranges:
+        min = target_range["min"]
+        max = target_range["max"]
+        target = target_range["target"]
+        if value >= min and value <= max:
+          delta = value - min
+          new_values.append(target + delta)
+          added = True
+          break
+          
+      if not added:
+        new_values.append(value)
+
+    values.clear()
+    values.extend(new_values)
+    target_ranges.clear()
+
+  def create_target_range(target_ranges, source_start, destination_start, length):
+    target_ranges.append(dict(min=source_start, max=source_start + length - 1, target=destination_start))
+
+  def is_numeric(line):
+    for character in line:
+      if character.isnumeric():
+        return True
+      
+  values = []
+  value_ranges = []
+  target_ranges = []
+  with open("day5.txt", "r") as input:
+    for line in input:
+      line = line.strip()
+      if not is_numeric(line):
+        break
+
+      numbers = line.split(" ")
+      for number in numbers:
+        if number.isnumeric():
+          values.append(int(number))
+    
+    for i in range(len(values) // 2):
+      value_ranges.append(dict(min=values[i], max=values[i] + values[i+1] - 1))
+
+    for line in input:
+      line = line.strip()
+      if line.isspace():
+        continue 
+      
+      if not is_numeric(line):
+        apply_target_ranges_to_ranges(value_ranges, target_ranges)
+        apply_target_ranges(values, target_ranges)
+        continue
+
+      numbers = line.split(" ")
+      create_target_range(target_ranges, int(numbers[1]), int(numbers[0]), int(numbers[2]))
+
+  apply_target_ranges(values, target_ranges)
+  print(min(values))
+      
+day5()
